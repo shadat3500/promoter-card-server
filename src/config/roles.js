@@ -1,15 +1,10 @@
-// An application depends on what roles it will have.
-
 const allRoles = {
-  user: ["common", "user"],
-  admin: ["common", "commonAdmin", "admin"],
-  superAdmin: ["common", "commonAdmin", "superAdmin"],
+  admin: ['common', 'manageVenues', 'manageEnquiries', 'managePricing', 'manageUsers'],
+  venue: ['common', 'manageLandingPages', 'managePromoters', 'manageCards', 'viewLeads'],
+  promoter: ['common'],
 };
 
 const roles = Object.keys(allRoles);
 const roleRights = new Map(Object.entries(allRoles));
 
-module.exports = {
-  roles,
-  roleRights,
-};
+module.exports = { roles, roleRights };

@@ -6,14 +6,14 @@ const { roles } = require("../config/roles");
 
 const userSchema = mongoose.Schema(
   {
-    firstName: {
+    // Used by venue + admin for username-based login
+    username: {
       type: String,
       required: false,
-      default: null,
-    },
-    lastName: {
-      type: String,
-      required: false,
+      unique: true,
+      trim: true,
+      lowercase: true,
+      sparse: true, // allows multiple nulls
       default: null,
     },
     fullName: {
@@ -24,73 +24,51 @@ const userSchema = mongoose.Schema(
     },
     email: {
       type: String,
-      required: true,
+      required: false,
       unique: true,
+      sparse: true, // allows multiple nulls (promoters/venues may not have email)
       trim: true,
       lowercase: true,
       validate(value) {
-        if (!validator.isEmail(value)) {
+        if (value && !validator.isEmail(value)) {
           throw new Error("Invalid email");
         }
       },
-    },
-    image: {
-      type: String,
-      required: [true, "Image is must be Required"],
-      default: "/uploads/users/user.png",
+      default: null,
     },
     password: {
       type: String,
-      required: false,
+      required: true,
       trim: true,
       minlength: 8,
-      validate(value) {
-        if (!value.match(/\d/) || !value.match(/[a-zA-Z]/)) {
-          throw new Error(
-            "Password must contain at least one letter and one number"
-          );
-        }
-      },
       private: true,
     },
     role: {
       type: String,
       enum: roles,
+      required: true,
     },
-    callingCode: {
+    // Only for venue role
+    venueName: {
       type: String,
       required: false,
-      default: null
+      trim: true,
+      default: null,
+    },
+    // Reference to Venue document (for role=venue)
+    venueRef: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Venue",
+      default: null,
+    },
+    image: {
+      type: String,
+      default: "/uploads/users/user.png",
     },
     phoneNumber: {
-      type: Number,
-      required: false,
-      default: null
-    },
-    nidNumber: {
-      type: Number,
-      required: false,
-      default: null
-    },
-    isNIDVerified: {
-      type: Boolean,
-      default: false,
-      default: null
-    },
-    dataOfBirth: {
-      type: Date,
-      required: false,
-      default: null
-    },
-    address: {
       type: String,
       required: false,
-      default: null
-    },
-    oneTimeCode: {
-      type: String,
-      required: false,
-      default: null
+      default: null,
     },
     isEmailVerified: {
       type: Boolean,
@@ -100,84 +78,49 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    isProfileCompleted: {
-      type: Boolean,
-      default: false,
+    oneTimeCode: {
+      type: String,
+      required: false,
+      default: null,
     },
-    fcmToken: { // onlly use for firebase push notification / mobile focus*
+    fcmToken: {
       type: String,
       required: false,
       default: null,
     },
     isDeleted: {
       type: Boolean,
-      default: false
-    },
-
-    securitySettings: {
-      recoveryEmail: {
-        type: String,
-        lowercase: true,
-        trim: true,
-        match: [/^\S+@\S+\.\S+$/, "Invalid email format"],
-        default: null,
-      },
-      recoveryPhone: {
-        type: String,
-        trim: true,
-        match: [/^\+?[1-9]\d{1,14}$/, "Invalid phone number format"],
-        default: null,
-      },
-      securityQuestion: {
-        type: String,
-        trim: true,
-        default: null,
-      },
-      securityAnswer: {
-        type: String,
-        required: function () {
-          return !!this.securityQuestion;
-        },
-        set: (answer) => (answer ? require("crypto").createHash("sha256").update(answer).digest("hex") : null),
-        select: false,
-        default: null,
-      },
+      default: false,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-// add plugin that converts mongoose to json
 userSchema.plugin(toJSON);
 userSchema.plugin(paginate);
 
 userSchema.statics.isEmailTaken = async function (email, excludeUserId) {
+  if (!email) return false;
   const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
   return !!user;
 };
-userSchema.statics.isPhoneNumberTaken = async function (
-  phoneNumber,
-  excludeUserId
-) {
-  const user = await this.findOne({ phoneNumber, _id: { $ne: excludeUserId } });
+
+userSchema.statics.isUsernameTaken = async function (username, excludeUserId) {
+  if (!username) return false;
+  const user = await this.findOne({ username, _id: { $ne: excludeUserId } });
   return !!user;
 };
 
 userSchema.methods.isPasswordMatch = async function (password) {
-  const user = this;
-  return bcrypt.compare(password, user.password);
+  return bcrypt.compare(password, this.password);
 };
 
 userSchema.pre("save", async function (next) {
-  const user = this;
-  if (user.isModified("password")) {
-    user.password = await bcrypt.hash(user.password, 8);
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 8);
   }
   next();
 });
 
 const User = mongoose.model("User", userSchema);
-
 module.exports = User;
