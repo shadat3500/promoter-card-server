@@ -2,27 +2,10 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const { User, Venue } = require("../models");
 
-// password: Admin@2024
-const ADMIN_PASSWORD_HASH = "$2a$08$cUQ3uMdbQjlyDF/dgn5mNuEt9fLJZqq8TaT9aKabrFuG5wND3/mPO";
-
-// Seed data
-const adminData = {
-  fullName: "PromoterCard Admin",
-  email: "admin@promotercard.com",
-  username: "admin",
-  password: ADMIN_PASSWORD_HASH,
-  role: "admin",
-  isEmailVerified: true,
-};
-
-// Demo venue (password: Venue@2024 — same hash for demo)
-const demoVenueUser = {
-  username: "obeach",
-  venueName: "O Beach Club",
-  password: ADMIN_PASSWORD_HASH,
-  role: "venue",
-  isEmailVerified: true,
-};
+// Pre-hashed password for "1qazxsw2"
+// Using insertMany to bypass pre('save') hook — password is already hashed
+const HASHED_PW =
+  "$2a$08$cUQ3uMdbQjlyDF/dgn5mNuEt9fLJZqq8TaT9aKabrFuG5wND3/mPO";
 
 const connectDB = async () => {
   try {
@@ -42,12 +25,26 @@ const seedDatabase = async () => {
   await Venue.deleteMany({});
   console.log("Cleared users and venues");
 
-  // Seed admin
-  const admin = await User.create(adminData);
-  console.log(`Admin created: ${admin.email} (username: ${admin.username})`);
+  // Use insertMany to bypass the pre('save') bcrypt hook — password is already hashed
+  const [admin, venueUser] = await User.insertMany([
+    {
+      fullName: "PromoterCard Admin",
+      email: "admin@promotercard.com",
+      username: "admin",
+      password: HASHED_PW,
+      role: "admin",
+      isEmailVerified: true,
+    },
+    {
+      username: "obeach",
+      venueName: "O Beach Club",
+      password: HASHED_PW,
+      role: "venue",
+      isEmailVerified: true,
+    },
+  ]);
 
-  // Seed demo venue user
-  const venueUser = await User.create(demoVenueUser);
+  console.log(`Admin created: ${admin.email}`);
 
   // Seed demo venue profile
   const venue = await Venue.create({
@@ -56,20 +53,21 @@ const seedDatabase = async () => {
     isActive: true,
   });
 
-  // Link venue back to user
-  venueUser.venueRef = venue._id;
-  await venueUser.save();
+  // Link venue back to user (direct update — no pre-save hook on this field)
+  await User.updateOne({ _id: venueUser._id }, { venueRef: venue._id });
 
-  console.log(`Demo venue created: ${venue.name} (username: ${venueUser.username})`);
+  console.log(
+    `Demo venue created: ${venue.name} (username: ${venueUser.username})`,
+  );
   console.log("\nSeeding complete!");
   console.log("─────────────────────────────────────────");
   console.log("Admin login:   POST /api/v1/auth/admin/login");
   console.log("  email:       admin@promotercard.com");
-  console.log("  password:    Admin@2024");
+  console.log("  password:    1qazxsw2");
   console.log("─────────────────────────────────────────");
   console.log("Venue login:   POST /api/v1/auth/venue/login");
   console.log("  username:    obeach");
-  console.log("  password:    Admin@2024 (demo hash)");
+  console.log("  password:    1qazxsw2");
   console.log("─────────────────────────────────────────");
 
   mongoose.disconnect();
