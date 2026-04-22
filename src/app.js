@@ -29,10 +29,10 @@ app.use(express.static("public"));
 app.use(helmet());
 
 // parse json request body
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
 
 // parse urlencoded request body
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // sanitize request data
 app.use(xss());

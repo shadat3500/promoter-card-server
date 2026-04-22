@@ -95,7 +95,7 @@ const sendNewEnquiryNotification = async (adminEmail, enquiry) => {
     </table>
 
     <div style="text-align:center;">
-      <a href="${process.env.BACKEND_IP || "http://localhost:3000"}/admin"
+      <a href="${process.env.CLIENT_URL || "https://promotercard.sobhoy.com"}/admin"
          style="display:inline-block;background:linear-gradient(135deg,#f97316,#f59e0b);color:#fff;padding:14px 32px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;">
         View in Admin Panel →
       </a>

@@ -159,7 +159,7 @@ const convertEnquiryToVenue = catchAsync(async (req, res) => {
 
   // 5. Send welcome email to venue (if they have an email)
   if (enquiry.email) {
-    const loginUrl = `${process.env.BACKEND_IP || "http://localhost:5173"}/promoterlogin`;
+    const loginUrl = `${process.env.CLIENT_URL || "https://promotercard.sobhoy.com"}/promoterlogin`;
     emailService
       .sendVenueWelcomeEmail(enquiry.email, {
         venueName: enquiry.businessName,

@@ -6,6 +6,7 @@ const gameController = require('../../controllers/game.controller');
 const formController = require('../../controllers/form.controller');
 const leadController = require('../../controllers/lead.controller');
 const pageController = require('../../controllers/page.controller');
+const cardController = require('../../controllers/card.controller');
 const auth = require('../../middlewares/auth');
 
 const router = express.Router();
@@ -44,6 +45,12 @@ router.put('/me/form', auth('manageLandingPages'), formController.saveFormFields
 // Leads (Guest List)
 router.get('/me/leads', auth('manageLandingPages'), leadController.getLeads);
 router.patch('/me/leads/:leadId', auth('manageLandingPages'), leadController.updateLeadStatus);
+
+// Cards
+router.get('/me/cards', auth('manageLandingPages'), cardController.getCards);
+router.post('/me/cards', auth('manageLandingPages'), cardController.createCard);
+router.patch('/me/cards/:cardId', auth('manageLandingPages'), cardController.updateCard);
+router.delete('/me/cards/:cardId', auth('manageLandingPages'), cardController.deleteCard);
 
 // ─── Admin only — fixed paths before /:venueId ────────────────────────────────
 router.get('/', auth('manageVenues'), venueController.getAllVenues);
