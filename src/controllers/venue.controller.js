@@ -49,6 +49,21 @@ const updateMyVenue = catchAsync(async (req, res) => {
   );
 });
 
+// ─── Admin: update venue user email ──────────────────────────────────────────
+
+const updateVenueUserEmail = catchAsync(async (req, res) => {
+  const { email } = req.body;
+  if (!email) throw new ApiError(httpStatus.BAD_REQUEST, "Email is required");
+  const venue = await venueService.getVenueById(req.params.venueId);
+  const userId = venue.user?._id ?? venue.user;
+  if (!userId) throw new ApiError(httpStatus.BAD_REQUEST, "Venue has no linked user");
+  const { userService: us } = require("../services");
+  const updated = await us.updateUserById(userId, { email: email.toLowerCase().trim() });
+  res.status(httpStatus.OK).json(
+    response({ message: "Email updated", status: "OK", statusCode: httpStatus.OK, data: updated })
+  );
+});
+
 // ─── Admin: delete a venue ────────────────────────────────────────────────────
 
 const deleteVenue = catchAsync(async (req, res) => {
@@ -215,6 +230,7 @@ const deletePromoter = catchAsync(async (req, res) => {
 module.exports = {
   getAllVenues,
   getVenue,
+  updateVenueUserEmail,
   getMyVenue,
   updateMyVenue,
   deleteVenue,

@@ -198,11 +198,95 @@ const getMe = catchAsync(async (req, res) => {
   );
 });
 
+// ─── Venue: forgot password (by email → OTP) ─────────────────────────────────
+
+const venueForgotPassword = catchAsync(async (req, res) => {
+  const { email } = req.body;
+  if (!email) throw new ApiError(httpStatus.BAD_REQUEST, "Email is required");
+
+  const user = await userService.getUserByEmail(email.toLowerCase().trim());
+
+  if (!user || user.role !== "venue") {
+    // Don't reveal whether email exists
+    return res.status(httpStatus.OK).json(
+      response({
+        message: "If an account with that email exists, a reset code has been sent.",
+        status: "OK",
+        statusCode: httpStatus.OK,
+        data: {},
+      })
+    );
+  }
+
+  const oneTimeCode = Math.floor(Math.random() * 900000) + 100000;
+  await userService.updateUserById(user.id, { oneTimeCode: String(oneTimeCode), isResetPassword: true });
+  await emailService.sendResetPasswordEmail(user.email, oneTimeCode);
+
+  const masked = user.email.replace(/(.{2}).+(@.+)/, "$1***$2");
+  res.status(httpStatus.OK).json(
+    response({
+      message: `Reset code sent to ${masked}`,
+      status: "OK",
+      statusCode: httpStatus.OK,
+      data: { maskedEmail: masked },
+    })
+  );
+});
+
+// ─── Venue: reset password (email + OTP + new password) ──────────────────────
+
+const venueResetPassword = catchAsync(async (req, res) => {
+  const { email, code, newPassword } = req.body;
+  if (!email || !code || !newPassword) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Email, code and new password are required");
+  }
+
+  const user = await userService.getUserByEmail(email.toLowerCase().trim());
+
+  if (!user || user.role !== "venue") {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid request");
+  }
+  if (!user.isResetPassword || !user.oneTimeCode) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "No active password reset. Please request a new code.");
+  }
+  if (String(code).trim() !== String(user.oneTimeCode).trim()) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid or expired code. Please try again.");
+  }
+
+  await userService.updateUserById(user.id, {
+    password: newPassword,
+    isResetPassword: false,
+    oneTimeCode: null,
+  });
+
+  res.status(httpStatus.OK).json(
+    response({ message: "Password reset successful. You can now log in.", status: "OK", statusCode: httpStatus.OK, data: {} })
+  );
+});
+
+// ─── Admin: impersonate a venue user ─────────────────────────────────────────
+
+const impersonateVenue = catchAsync(async (req, res) => {
+  const { venueUserId } = req.body;
+  const user = await userService.getUserById(venueUserId);
+  if (!user || user.role !== "venue") {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Not a valid venue user");
+  }
+  const tokens = await tokenService.generateAuthTokens(user);
+  const venue = await Venue.findOne({ user: user._id });
+  res.status(httpStatus.OK).json(
+    response({ message: "Impersonation successful", status: "OK", statusCode: httpStatus.OK, data: { user, venue, tokens } })
+  );
+});
+
 module.exports = {
   register,
   adminLogin,
   venueLogin,
+  venueForgotPassword,
+  venueResetPassword,
   createVenueAccount,
+  impersonateVenue,
   logout,
   refreshTokens,
   forgotPassword,

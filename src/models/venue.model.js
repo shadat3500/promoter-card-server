@@ -53,6 +53,21 @@ const venueSchema = mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    gameType: {
+      type: String,
+      enum: ["dice", "spin_wheel"],
+      default: "dice",
+    },
+    // Landing page configuration
+    pageTitle: {
+      type: String,
+      default: null,
+    },
+    pageBlocks: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
+
     // Linked enquiry that created this venue (if admin converted)
     enquiryRef: {
       type: mongoose.Schema.Types.ObjectId,

@@ -27,11 +27,16 @@ const loginAdminWithEmailAndPassword = async (email, password, fcmToken) => {
   return user;
 };
 
-// Venue login — username + password (created by admin, no email verification needed)
-const loginVenueWithUsernameAndPassword = async (username, password, fcmToken) => {
-  const user = await userService.getUserByUsername(username);
+// Venue login — username OR email + password
+const loginVenueWithUsernameAndPassword = async (usernameOrEmail, password, fcmToken) => {
+  // Accept either username or email
+  const isEmail = usernameOrEmail.includes("@");
+  const user = isEmail
+    ? await userService.getUserByEmail(usernameOrEmail.toLowerCase().trim())
+    : await userService.getUserByUsername(usernameOrEmail.trim());
+
   if (!user || !(await user.isPasswordMatch(password))) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, "Incorrect username or password");
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Incorrect username/email or password");
   }
   if (user.role !== "venue") {
     throw new ApiError(httpStatus.FORBIDDEN, "Access denied. Venue accounts only.");

@@ -5,10 +5,7 @@ const ApiError = require("../utils/ApiError");
 // ─── Venue ────────────────────────────────────────────────────────────────────
 
 const getAllVenues = async (filter = {}, options = {}) => {
-  return Venue.paginate({ ...filter, isActive: true }, {
-    ...options,
-    populate: { path: "user", select: "username email fullName venueName" },
-  });
+  return Venue.paginate({ ...filter }, { ...options, populate: "user" });
 };
 
 const getVenueById = async (id) => {
