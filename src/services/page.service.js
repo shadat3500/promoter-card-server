@@ -17,7 +17,7 @@ const DEFAULT_BLOCKS = [
   },
   {
     id: "game", type: "game", label: "Prize Game", enabled: true, expanded: false,
-    content: { reviewUrl: "", reviewPrompt: "Show this screen to a staff member to claim your prize!" },
+    content: { gameEnabled: "true", reviewUrl: "", reviewPrompt: "Show this screen to a staff member to claim your prize!" },
   },
   {
     id: "social", type: "social", label: "Social Links", enabled: false, expanded: false,

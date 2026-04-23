@@ -7,6 +7,7 @@ const formController = require('../../controllers/form.controller');
 const leadController = require('../../controllers/lead.controller');
 const pageController = require('../../controllers/page.controller');
 const cardController = require('../../controllers/card.controller');
+const socialController = require('../../controllers/social.controller');
 const auth = require('../../middlewares/auth');
 
 const router = express.Router();
@@ -15,6 +16,7 @@ const router = express.Router();
 router.post('/enquiries', validate(venueValidation.createEnquiry), venueController.submitEnquiry);
 router.get('/slug/:slug/published', formController.getPublishedData);
 router.post('/slug/:slug/leads', leadController.createLead);
+router.post('/slug/:slug/social-click', socialController.trackClick);
 
 // ─── Venue (self) — MUST come before /:venueId ────────────────────────────────
 router.get('/me/profile', auth('manageLandingPages'), venueController.getMyVenue);
@@ -45,6 +47,9 @@ router.put('/me/form', auth('manageLandingPages'), formController.saveFormFields
 // Leads (Guest List)
 router.get('/me/leads', auth('manageLandingPages'), leadController.getLeads);
 router.patch('/me/leads/:leadId', auth('manageLandingPages'), leadController.updateLeadStatus);
+
+// Social click stats
+router.get('/me/social-stats', auth('manageLandingPages'), socialController.getStats);
 
 // Cards
 router.get('/me/cards', auth('manageLandingPages'), cardController.getCards);
