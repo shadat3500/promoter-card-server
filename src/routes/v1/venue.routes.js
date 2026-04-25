@@ -8,6 +8,7 @@ const leadController = require('../../controllers/lead.controller');
 const pageController = require('../../controllers/page.controller');
 const cardController = require('../../controllers/card.controller');
 const socialController = require('../../controllers/social.controller');
+const campaignController = require('../../controllers/campaign.controller');
 const auth = require('../../middlewares/auth');
 
 const router = express.Router();
@@ -50,6 +51,12 @@ router.patch('/me/leads/:leadId', auth('manageLandingPages'), leadController.upd
 
 // Social click stats
 router.get('/me/social-stats', auth('manageLandingPages'), socialController.getStats);
+
+// Campaigns
+router.get('/me/campaigns', auth('manageLandingPages'), campaignController.getCampaigns);
+router.post('/me/campaigns', auth('manageLandingPages'), campaignController.createCampaign);
+router.patch('/me/campaigns/:campaignId', auth('manageLandingPages'), campaignController.updateCampaign);
+router.delete('/me/campaigns/:campaignId', auth('manageLandingPages'), campaignController.deleteCampaign);
 
 // Cards
 router.get('/me/cards', auth('manageLandingPages'), cardController.getCards);

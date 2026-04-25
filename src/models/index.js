@@ -9,6 +9,7 @@ module.exports.PricingTier = require('./pricing.model');
 module.exports.Prize = require('./prize.model');
 module.exports.FormField = require('./formField.model');
 module.exports.SocialClick = require('./socialClick.model');
+module.exports.Campaign = require('./campaign.model');
 
 module.exports.Notification = require('./notification.model');
 module.exports.TermsAndCondition = require('./termsConditions.model');

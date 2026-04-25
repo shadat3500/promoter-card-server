@@ -182,6 +182,22 @@ const deleteMe = catchAsync(async (req, res) => {
   );
 });
 
+// ─── Update own profile (venueName + image) ───────────────────────────────────
+
+const updateProfile = catchAsync(async (req, res) => {
+  const user = await userService.getUserById(req.user.id);
+  if (!user) throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+
+  const { venueName, image } = req.body;
+  if (venueName !== undefined) user.venueName = venueName.trim();
+  if (image !== undefined) user.image = image;
+  await user.save();
+
+  res.status(httpStatus.OK).json(
+    response({ message: "Profile updated", status: "OK", statusCode: httpStatus.OK, data: { user } })
+  );
+});
+
 // ─── Get current user (me) ────────────────────────────────────────────────────
 
 const getMe = catchAsync(async (req, res) => {
@@ -295,4 +311,5 @@ module.exports = {
   verifyEmail,
   deleteMe,
   getMe,
+  updateProfile,
 };

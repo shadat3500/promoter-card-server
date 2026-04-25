@@ -37,6 +37,9 @@ router.post('/logout', validate(authValidation.logout), authController.logout);
 // Get my profile
 router.get('/me', auth('common'), authController.getMe);
 
+// Update own profile (venueName, image)
+router.patch('/me', auth('common'), authController.updateProfile);
+
 // Change password
 router.post('/change-password', auth('common'), validate(authValidation.changePassword), authController.changePassword);
 
