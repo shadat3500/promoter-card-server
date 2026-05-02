@@ -16,6 +16,7 @@ const prizeSchema = mongoose.Schema(
     currentWins: { type: Number, default: 0 },
     isActive: { type: Boolean, default: true },
     sortOrder: { type: Number, default: 0 },
+    color: { type: String, default: null },
   },
   { timestamps: true }
 );

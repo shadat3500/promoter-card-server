@@ -3,6 +3,7 @@ const Joi = require("joi");
 const updateVenue = {
   body: Joi.object().keys({
     name: Joi.string(),
+    slug: Joi.string().lowercase().pattern(/^[a-z0-9-]+$/).min(2).max(60).allow(""),
     description: Joi.string().allow(""),
     address: Joi.string().allow(""),
     phone: Joi.string().allow(""),
