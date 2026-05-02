@@ -58,6 +58,7 @@ const bulkSavePrizes = async (userId, prizesData) => {
     currentWins: Math.max(0, Number(p.currentWins) || 0),
     isActive: p.isActive !== false,
     sortOrder: p.sortOrder ?? idx,
+    color: p.color || null,
   }));
 
   return Prize.insertMany(docs);
